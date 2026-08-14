@@ -42,6 +42,8 @@ public class WatchService {
     }
 
     public void delete(UUID id){
+        watchRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Relogio não encontrado"));
         watchRepository.deleteById(id);
     }
 
