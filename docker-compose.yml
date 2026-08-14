@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: watch-db
+    environment:
+      POSTGRES_DB: watch
+      POSTGRES_USER: watch
+      POSTGRES_PASSWORD: watch
+    ports:
+      - "5432:5432"
+    volumes:
+      - watch_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U watch -d watch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: watch-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/watch
+      SPRING_DATASOURCE_USERNAME: watch
+      SPRING_DATASOURCE_PASSWORD: watch
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  watch_postgres_data:

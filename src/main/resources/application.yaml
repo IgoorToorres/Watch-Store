@@ -1,3 +1,20 @@
 spring:
   application:
     name: watch
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/watch}
+    username: ${SPRING_DATASOURCE_USERNAME:watch}
+    password: ${SPRING_DATASOURCE_PASSWORD:watch}
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
