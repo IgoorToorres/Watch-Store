@@ -113,6 +113,66 @@ public class Watch {
         this.priceInCents = priceInCents;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public String getModel() {
+        return model;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public MovementType getMovementType() {
+        return movementType;
+    }
+
+    public CaseMaterial getCaseMaterial() {
+        return caseMaterial;
+    }
+
+    public CrystalType getCrystalType() {
+        return crystalType;
+    }
+
+    public Integer getWaterResistanceM() {
+        return waterResistanceM;
+    }
+
+    public Integer getDiameterMm() {
+        return diameterMm;
+    }
+
+    public Integer getLugToLugMm() {
+        return lugToLugMm;
+    }
+
+    public Integer getThicknessMm() {
+        return thicknessMm;
+    }
+
+    public Integer getLugWidthMm() {
+        return lugWidthMm;
+    }
+
+    public Long getPriceInCents() {
+        return priceInCents;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
     private void validateNullName(String name, String exceptionMessage){
         if(name == null || name.isBlank()){
             throw new DomainException(exceptionMessage);
