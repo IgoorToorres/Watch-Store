@@ -1,5 +1,6 @@
 package com.watch.controller;
 
+import com.watch.dto.WatchFilterRequest;
 import com.watch.dto.WatchPageResponse;
 import com.watch.dto.WatchRequest;
 import com.watch.dto.WatchResponse;
@@ -29,9 +30,35 @@ public class WatchController {
     @GetMapping
     public ResponseEntity<WatchPageResponse> listAll(
             @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "12") Integer perPage
+            @RequestParam(defaultValue = "12") Integer perPage,
+            @RequestParam(defaultValue = "newest") String sort,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String movementType,
+            @RequestParam(required = false) String caseMaterial,
+            @RequestParam(required = false) String crystalType,
+            @RequestParam(required = false) Integer waterResistanceMin,
+            @RequestParam(required = false) Integer waterResistanceMax,
+            @RequestParam(required = false) Long priceMin,
+            @RequestParam(required = false) Long priceMax,
+            @RequestParam(required = false) Integer diameterMin,
+            @RequestParam(required = false) Integer diameterMax
     ){
-        WatchPageResponse response = watchService.list(page, perPage);
+        WatchFilterRequest filters = new WatchFilterRequest(
+                search,
+                brand,
+                movementType,
+                caseMaterial,
+                crystalType,
+                waterResistanceMin,
+                waterResistanceMax,
+                priceMin,
+                priceMax,
+                diameterMin,
+                diameterMax
+        );
+
+        WatchPageResponse response = watchService.list(page, perPage, sort, filters);
         return ResponseEntity.ok(response);
     }
 
