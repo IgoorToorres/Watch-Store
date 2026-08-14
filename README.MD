@@ -1,330 +1,379 @@
-# Desafio Backend (Spring Boot) - Controle de Estoque de Relógios
+# Watch API - Desafio Backend Resolvido
 
-API REST para controle de estoque de relógios, implementada com **Spring Boot**, **PostgreSQL** e arquitetura em **camadas tradicionais**:
+API REST para controle de estoque de relógios, desenvolvida como solução completa de um desafio backend com **Spring Boot**, **PostgreSQL**, **JPA Specifications**, **Docker** e **Swagger/OpenAPI**.
 
-✅ `entity` → `repository` → `service` → `controller`
+O projeto implementa uma arquitetura em camadas tradicional, com foco em clareza, validação de entrada, tratamento global de erros, filtros combináveis e uma experiência de execução simples para avaliação técnica.
 
-✅ DTO + Mapper
+## Destaques
 
-✅ Paginação + busca + filtros + ordenação
+- CRUD completo de relógios
+- Paginação com limite máximo por página
+- Ordenação por data, preço, diâmetro e resistência à água
+- Busca textual em marca, modelo e referência
+- Filtros combináveis com `JpaSpecificationExecutor`
+- DTOs com `record`
+- Mapper manual com campos calculados
+- Enums com conversão `fromApi()` e `toApi()`
+- Validação com Bean Validation
+- Tratamento global de erros com `@RestControllerAdvice`
+- Documentação Swagger/OpenAPI detalhada
+- Ambiente com Docker Compose: API + PostgreSQL
+- Makefile para padronizar execução local e via Docker
 
-✅ CRUD completo (criar / atualizar / remover)
+## Preview
 
-✅ Validação + tratamento global de erros (`@ControllerAdvice`)
+### Swagger UI
 
-✅ Seed inicial para teste rápido
+![Swagger UI](images/swagger.png)
 
----
+### Resposta de sucesso
+
+![Exemplo de resposta de sucesso](images/exemplo_sucesso.png)
+
+### Resposta de erro padronizada
+
+![Exemplo de resposta de erro](images/exemplo_erro.png)
+
+### Containers Docker em execução
+
+![Docker rodando](images/docker.png)
 
 ## Tecnologias
 
-- Java 17+
-- Spring Boot (Web, Data JPA, Validation)
+- Java 25
+- Spring Boot 4.1
+- Spring Web MVC
+- Spring Data JPA
+- Bean Validation
 - PostgreSQL
-- Lombok
-
----
+- Springdoc OpenAPI / Swagger UI
+- Docker e Docker Compose
+- Maven
 
 ## Arquitetura
 
 Organização por responsabilidade:
 
-```
-com.market.watchapi
-  entity/
-  repository/
-  service/
+```text
+com.watch
   controller/
   dto/
-  mapper/
-  config/
+  entity/
   exception/
+  mapper/
+  repository/
+  service/
+  specification/
 ```
 
-### Responsabilidades
+Responsabilidades principais:
 
-- **entity**: entidades JPA e enums
-- **repository**: acesso a dados (Spring Data JPA)
-- **service**: regras de listagem, filtros, ordenação e CRUD
-- **dto**: contratos de entrada/saída da API
-- **mapper**: conversão `Entity -> DTO` + campos calculados
-- **controller**: endpoints REST
-- **exception**: exceções de domínio + handler global
-- **config**: seed de dados iniciais
+- `controller`: exposição dos endpoints REST e documentação OpenAPI
+- `dto`: contratos de entrada, saída, paginação e filtros
+- `entity`: entidade JPA e enums de domínio
+- `exception`: exceções de domínio, response de erro e handler global
+- `mapper`: conversão entre DTOs e entidade, além dos campos calculados
+- `repository`: acesso a dados com Spring Data JPA
+- `service`: regras de aplicação, CRUD, paginação, ordenação e filtros
+- `specification`: filtros combináveis com Criteria API
 
----
+## Como Rodar
 
-## Funcionalidades
+### Opção 1: Docker
 
-### 1) Listagem de relógios com filtros
+Sobe a API e o PostgreSQL:
 
-- Paginação (`pagina`, `porPagina`)
-- Busca textual (`busca`) em `marca`, `modelo`, `referencia`
-- Filtros combináveis:
-    - `marca`
-    - `tipoMovimento` (quartz | automatic | manual)
-    - `materialCaixa` (steel | titanium | resin | bronze | ceramic)
-    - `tipoVidro` (mineral | sapphire | acrylic)
-    - faixa de resistência: `resistenciaMin`, `resistenciaMax`
-    - faixa de preço: `precoMin`, `precoMax`
-    - faixa de diâmetro: `diametroMin`, `diametroMax`
-- Ordenação (`ordenar`)
-    - `newest` (mais recentes)
-    - `price_asc`
-    - `price_desc`
-    - `diameter_asc`
-    - `wr_desc`
+```bash
+make run
+```
 
-### 2) Detalhe por ID
+Serviços:
 
-Retorna um relógio específico.
+- API: `http://localhost:8080`
+- PostgreSQL: `localhost:5432`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
-### 3) CRUD
+Para parar:
 
-- Criar relógio
-- Atualizar relógio
-- Remover relógio
+```bash
+make stop
+```
 
----
+### Opção 2: Desenvolvimento Local
+
+Sobe apenas o PostgreSQL no Docker e roda a API localmente com Maven:
+
+```bash
+make dev
+```
+
+### Outros Comandos
+
+```bash
+make build
+make test
+make logs
+make clean
+```
+
+## Configuração
+
+A aplicação usa variáveis de ambiente com valores padrão:
+
+```yaml
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/watch
+SPRING_DATASOURCE_USERNAME=watch
+SPRING_DATASOURCE_PASSWORD=watch
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+```
+
+No Docker Compose, a API acessa o banco pelo host interno `db`:
+
+```text
+jdbc:postgresql://db:5432/watch
+```
 
 ## Endpoints
 
 Base URL:
 
+```text
+http://localhost:8080/api/watches
 ```
-http://localhost:8080
+
+### Criar Relógio
+
+```http
+POST /api/watches
 ```
 
-### Listar relógios
+Exemplo:
 
-**GET** `/api/relogios`
+```json
+{
+  "brand": "Seiko",
+  "model": "Diver 200m",
+  "reference": "SKX-Style",
+  "movementType": "automatic",
+  "caseMaterial": "steel",
+  "crystalType": "mineral",
+  "waterResistanceM": 200,
+  "diameterMm": 42,
+  "lugToLugMm": 46,
+  "thicknessMm": 13,
+  "lugWidthMm": 22,
+  "priceInCents": 159990
+}
+```
 
-### Query params
+### Listar Relógios
+
+```http
+GET /api/watches
+```
+
+Query params:
 
 | Parâmetro | Tipo | Padrão | Descrição |
 | --- | --- | --- | --- |
-| `pagina` | int | `1` | Página atual |
-| `porPagina` | int | `12` | Itens por página (**máx 60**) |
-| `busca` | string | - | Busca em marca/modelo/referência |
-| `marca` | string | - | Filtra por marca (case-insensitive) |
-| `tipoMovimento` | string | - | `quartz` | `automatic` | `manual` |
-| `materialCaixa` | string | - | `steel` | `titanium` | `resin` | `bronze` | `ceramic` |
-| `tipoVidro` | string | - | `mineral` | `sapphire` | `acrylic` |
-| `resistenciaMin` | int | - | Resistência mínima (m) |
-| `resistenciaMax` | int | - | Resistência máxima (m) |
-| `precoMin` | long | - | Preço mínimo (centavos) |
-| `precoMax` | long | - | Preço máximo (centavos) |
-| `diametroMin` | int | - | Diâmetro mínimo (mm) |
-| `diametroMax` | int | - | Diâmetro máximo (mm) |
-| `ordenar` | string | `newest` | `newest`, `price_asc`, `price_desc`, `diameter_asc`, `wr_desc` |
+| `page` | integer | `1` | Página atual, começando em 1 |
+| `perPage` | integer | `12` | Itens por página, máximo 60 |
+| `sort` | string | `newest` | Ordenação da listagem |
+| `search` | string | - | Busca em `brand`, `model` e `reference` |
+| `brand` | string | - | Filtra por marca |
+| `movementType` | string | - | `quartz`, `automatic`, `manual` |
+| `caseMaterial` | string | - | `steel`, `titanium`, `resin`, `bronze`, `ceramic` |
+| `crystalType` | string | - | `mineral`, `sapphire`, `acrylic` |
+| `waterResistanceMin` | integer | - | Resistência mínima à água em metros |
+| `waterResistanceMax` | integer | - | Resistência máxima à água em metros |
+| `priceMin` | long | - | Preço mínimo em centavos |
+| `priceMax` | long | - | Preço máximo em centavos |
+| `diameterMin` | integer | - | Diâmetro mínimo em milímetros |
+| `diameterMax` | integer | - | Diâmetro máximo em milímetros |
 
-### Exemplos
+Ordenações aceitas:
 
-```bash
-curl"http://localhost:8080/api/relogios?pagina=1&porPagina=12"
-curl"http://localhost:8080/api/relogios?busca=seiko"
-curl"http://localhost:8080/api/relogios?tipoMovimento=automatic&tipoVidro=mineral"
-curl"http://localhost:8080/api/relogios?resistenciaMin=100&resistenciaMax=250"
-curl"http://localhost:8080/api/relogios?precoMin=50000&precoMax=200000"
-curl"http://localhost:8080/api/relogios?diametroMin=38&diametroMax=42"
-curl"http://localhost:8080/api/relogios?ordenar=price_desc"
-
+```text
+newest
+price_asc
+price_desc
+diameter_asc
+wr_desc
 ```
 
-### Response
+Exemplos:
+
+```bash
+curl "http://localhost:8080/api/watches?page=1&perPage=12"
+curl "http://localhost:8080/api/watches?search=seiko"
+curl "http://localhost:8080/api/watches?movementType=automatic&crystalType=sapphire"
+curl "http://localhost:8080/api/watches?waterResistanceMin=100&waterResistanceMax=300"
+curl "http://localhost:8080/api/watches?priceMin=50000&priceMax=200000"
+curl "http://localhost:8080/api/watches?diameterMin=38&diameterMax=42"
+curl "http://localhost:8080/api/watches?sort=price_desc"
+```
+
+Resposta paginada:
 
 ```json
 {
-  "itens": [
+  "items": [
     {
       "id": "b7c1a1a6-3b59-4d09-8a5a-9b2ed13d72d9",
-      "marca": "Seiko",
-      "modelo": "Diver 200m",
-      "referencia": "SKX-Style",
-      "tipoMovimento": "automatic",
-      "materialCaixa": "steel",
-      "tipoVidro": "mineral",
-      "resistenciaAguaM": 200,
-      "diametroMm": 42,
+      "brand": "Seiko",
+      "model": "Diver 200m",
+      "reference": "SKX-Style",
+      "movementType": "automatic",
+      "caseMaterial": "steel",
+      "crystalType": "mineral",
+      "waterResistanceM": 200,
+      "diameterMm": 42,
       "lugToLugMm": 46,
-      "espessuraMm": 13,
-      "larguraLugMm": 22,
-      "precoEmCentavos": 159990,
-      "urlImagem": "https://picsum.photos/seed/relogio2/800/800",
-      "etiquetaResistenciaAgua": "mergulho",
-      "pontuacaoColecionador": 73
+      "thicknessMm": 13,
+      "lugWidthMm": 22,
+      "priceInCents": 159990,
+      "waterResistanceLabel": "mergulho",
+      "collectorScore": 73,
+      "createdAt": "2026-08-14T12:00:00",
+      "updatedAt": "2026-08-14T12:00:00"
     }
   ],
-  "total": 3
+  "total": 1,
+  "page": 1,
+  "perPage": 12,
+  "totalPages": 1
 }
 ```
-
----
 
 ### Buscar por ID
 
-**GET** `/api/relogios/{id}`
-
-```bash
-curl"http://localhost:8080/api/relogios/b7c1a1a6-3b59-4d09-8a5a-9b2ed13d72d9"
+```http
+GET /api/watches/{id}
 ```
 
-Response: `RelogioDto`
+### Atualizar Relógio
 
----
-
-### Criar relógio
-
-**POST** `/api/relogios`
-
-```bash
-curl -X POST "http://localhost:8080/api/relogios" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "marca":"Orient",
-    "modelo":"Bambino",
-    "referencia":"RA-AC0M01S10B",
-    "tipoMovimento":"automatic",
-    "materialCaixa":"steel",
-    "tipoVidro":"mineral",
-    "resistenciaAguaM":30,
-    "diametroMm":40,
-    "lugToLugMm":46,
-    "espessuraMm":12,
-    "larguraLugMm":21,
-    "precoEmCentavos":149990,
-    "urlImagem":"https://picsum.photos/seed/relogio4/800/800"
-  }'
+```http
+PUT /api/watches/{id}
 ```
 
----
+Recebe o mesmo corpo do `POST` e atualiza todos os campos editáveis.
 
-### Atualizar relógio
+### Remover Relógio
 
-**PUT** `/api/relogios/{id}`
-
-```bash
-curl -X PUT "http://localhost:8080/api/relogios/b7c1a1a6-3b59-4d09-8a5a-9b2ed13d72d9" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "marca":"Seiko",
-    "modelo":"Diver 200m (Rev 2)",
-    "referencia":"SKX-Style",
-    "tipoMovimento":"automatic",
-    "materialCaixa":"steel",
-    "tipoVidro":"mineral",
-    "resistenciaAguaM":200,
-    "diametroMm":42,
-    "lugToLugMm":46,
-    "espessuraMm":13,
-    "larguraLugMm":22,
-    "precoEmCentavos":169990,
-    "urlImagem":"https://picsum.photos/seed/relogio2/800/800"
-  }'
-
+```http
+DELETE /api/watches/{id}
 ```
 
----
+Retorna `204 No Content` quando removido com sucesso.
 
-### 📍 Remover relógio
+## Campos Calculados
 
-**DELETE** `/api/relogios/{id}`
+O `WatchResponse` retorna dois campos calculados no mapper.
 
-```bash
-curl -X DELETE"http://localhost:8080/api/relogios/b7c1a1a6-3b59-4d09-8a5a-9b2ed13d72d9"
+### `waterResistanceLabel`
 
-```
+Classificação baseada em `waterResistanceM`:
 
----
+| Regra | Resultado |
+| --- | --- |
+| `< 50` | `respingos` |
+| `50-99` | `uso_diario` |
+| `100-199` | `natacao` |
+| `>= 200` | `mergulho` |
 
-## Campos calculados (Service/Mapper)
+### `collectorScore`
 
-O `RelogioDto` inclui 2 campos calculados no `mapper`:
+Pontuação calculada com base em características do relógio:
 
-### `etiquetaResistenciaAgua`
+| Critério | Pontos |
+| --- | --- |
+| Vidro safira | +25 |
+| Resistência >= 100m | +15 |
+| Resistência >= 200m | +10 |
+| Movimento automático | +20 |
+| Caixa de aço | +10 |
+| Caixa de titânio | +12 |
+| Diâmetro clássico entre 38mm e 42mm | +8 |
 
-Classificação baseada em `resistenciaAguaM`:
+## Tratamento de Erros
 
-- `< 50` → `respingos`
-- `50–99` → `uso_diario`
-- `100–199` → `natacao`
-- `>= 200` → `mergulho`
-
-### `pontuacaoColecionador`
-
-Pontuação simples para enriquecer o DTO, baseada em:
-
-- vidro safira (+25)
-- resistência >= 100 (+15)
-- resistência >= 200 (bônus +10)
-- movimento automático (+20)
-- caixa aço (+10) / titânio (+12)
-- diâmetro “clássico” 38–42mm (+8)
-
----
-
-## Tratamento de erros
-
-### 404 — Não encontrado
-
-Quando o ID não existe:
+Erros seguem um formato padronizado:
 
 ```json
 {
-"timestamp":"2026-01-15T22:00:00Z",
-"status":404,
-"erro":"Não encontrado",
-"mensagem":"Relógio não encontrado: <id>",
-"caminho":"/api/relogios/<id>",
-"errosDeCampo":[]
+  "timestamp": "2026-08-14T12:00:00Z",
+  "status": 400,
+  "error": "Invalid request",
+  "message": "Validation error",
+  "path": "/api/watches",
+  "fieldErrors": [
+    {
+      "field": "brand",
+      "message": "Brand is required and cannot be blank."
+    }
+  ]
 }
-
 ```
 
-### 400 — Erro de validação
+Erros tratados:
 
-```json
-{
-"timestamp":"2026-01-15T22:00:00Z",
-"status":400,
-"erro":"Requisição inválida",
-"mensagem":"Erro de validação",
-"caminho":"/api/relogios",
-"errosDeCampo":[
-{"campo":"marca","mensagem":"must not be blank"}
-]
-}
+- `400 Bad Request`: validação, enum inválido, paginação inválida, ordenação inválida e filtros inconsistentes
+- `404 Not Found`: relógio não encontrado
+- `400 Bad Request`: UUID inválido ou corpo JSON malformado
 
+## Swagger
+
+A documentação interativa está disponível em:
+
+```text
+http://localhost:8080/swagger-ui.html
 ```
 
-### 400 — Parâmetro inválido (enum)
+Ela documenta:
 
-Ex.: `tipoMovimento=turbo`
+- contratos de request e response
+- exemplos de payload
+- query params de paginação, ordenação e filtros
+- respostas de sucesso
+- respostas de erro
 
-```json
-{
-"timestamp":"2026-01-15T22:00:00Z",
-"status":400,
-"erro":"Requisição inválida",
-"mensagem":"Tipo de movimento inválido: turbo",
-"caminho":"/api/relogios",
-"errosDeCampo":[]
-}
+## Docker
 
+O projeto possui dois containers:
+
+- `watch-api`: aplicação Spring Boot
+- `watch-db`: banco PostgreSQL
+
+Executar:
+
+```bash
+make run
 ```
 
----
+Ver logs:
 
-## Dados iniciais (Seed)
+```bash
+make logs
+```
 
-Ao iniciar, se a tabela estiver vazia, o projeto cria alguns relógios de exemplo automaticamente (`CarregadorDadosInicial`).
+Parar:
 
----
+```bash
+make stop
+```
 
-## Decisões técnicas
+## Decisões Técnicas
 
-- **DTO + Mapper manual**: controle total, simples para desafio e sem dependências extras.
-- **Specifications (`JpaSpecificationExecutor`)**: filtros combináveis e escaláveis sem virar um “if-else gigante”.
-- **Service centraliza regras**: controller fica fino e previsível.
-- **`porPagina` limitado a 60**: evita abuso de payload e dá maturidade ao desafio.
-- **Enums com `fromApi/toApi`**: mantém a API consistente e evita “string solta” no banco.
+- **DTOs com records**: reduzem boilerplate e deixam os contratos imutáveis.
+- **Mapper manual**: mantém controle explícito sobre conversões e campos calculados.
+- **Enums com `fromApi/toApi`**: evitam strings soltas e mantêm a API estável.
+- **Specifications**: permitem filtros combináveis sem criar vários métodos no repository.
+- **Service centralizado**: concentra regras de aplicação sem fragmentar CRUD simples em excesso.
+- **Handler global**: garante respostas de erro consistentes.
+- **Docker + Makefile**: facilita avaliação por recrutadores e execução em qualquer máquina.
+
+## Status
+
+Desafio backend implementado com CRUD, validações, paginação, ordenação, filtros, documentação Swagger e ambiente Docker pronto para execução.
