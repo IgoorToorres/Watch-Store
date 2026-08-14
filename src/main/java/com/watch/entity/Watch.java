@@ -114,6 +114,50 @@ public class Watch {
         this.priceInCents = priceInCents;
     }
 
+    public void update(
+            String brand,
+            String model,
+            String reference,
+            MovementType movementType,
+            CaseMaterial caseMaterial,
+            CrystalType crystalType,
+            Integer waterResistanceM,
+            Integer diameterMm,
+            Integer lugToLugMm,
+            Integer thicknessMm,
+            Integer lugWidthMm,
+            Long priceInCents
+    ){
+        validateNullName(brand, "Brand is required and cannot be blank.");
+        validateNullName(model, "Model is required and cannot be blank.");
+        validateNullName(reference, "Reference is required and cannot be blank.");
+
+        validateRequired(movementType, "Movement type is required. Accepted values: QUARTZ, AUTOMATIC, MANUAL.");
+        validateRequired(caseMaterial, "Case material is required. Accepted values: STEEL, TITANIUM, RESIN, BRONZE, CERAMIC.");
+        validateRequired(crystalType, "Crystal type is required. Accepted values: MINERAL, SAPPHIRE, ACRYLIC.");
+
+        validateWaterResistanceM(waterResistanceM, "Water resistance is required and cannot be negative.");
+        validatePositiveInteger(diameterMm, "Diameter must be greater than zero millimeters.");
+        validatePositiveInteger(lugToLugMm, "Lug-to-lug measurement must be greater than zero millimeters.");
+        validatePositiveInteger(thicknessMm, "Thickness must be greater than zero millimeters.");
+        validatePositiveInteger(lugWidthMm, "Lug width must be greater than zero millimeters.");
+
+        validatePrice(priceInCents, "Price is required and must be greater than or equal to zero cents.");
+
+        this.brand = brand;
+        this.model = model;
+        this.reference = reference;
+        this.movementType = movementType;
+        this.caseMaterial = caseMaterial;
+        this.crystalType = crystalType;
+        this.waterResistanceM = waterResistanceM;
+        this.diameterMm = diameterMm;
+        this.lugToLugMm = lugToLugMm;
+        this.thicknessMm = thicknessMm;
+        this.lugWidthMm = lugWidthMm;
+        this.priceInCents = priceInCents;
+    }
+
     public UUID getId() {
         return id;
     }
