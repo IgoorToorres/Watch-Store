@@ -1,5 +1,6 @@
 package com.watch.controller;
 
+import com.watch.dto.WatchPageResponse;
 import com.watch.dto.WatchRequest;
 import com.watch.dto.WatchResponse;
 import com.watch.service.WatchService;
@@ -8,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -27,8 +27,11 @@ public class WatchController {
     }
 
     @GetMapping
-    public ResponseEntity<List<WatchResponse>> listAll(){
-        List<WatchResponse> response = watchService.list();
+    public ResponseEntity<WatchPageResponse> listAll(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "12") Integer perPage
+    ){
+        WatchPageResponse response = watchService.list(page, perPage);
         return ResponseEntity.ok(response);
     }
 

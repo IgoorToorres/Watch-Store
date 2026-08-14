@@ -1,14 +1,19 @@
 package com.watch.service;
 
+import com.watch.dto.WatchPageResponse;
 import com.watch.dto.WatchRequest;
 import com.watch.dto.WatchResponse;
 import com.watch.entity.CaseMaterial;
 import com.watch.entity.CrystalType;
 import com.watch.entity.MovementType;
 import com.watch.entity.Watch;
+import com.watch.exception.DomainException;
 import com.watch.exception.ResourceNotFoundException;
 import com.watch.mapper.WatchMapper;
 import com.watch.repository.WatchRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -47,14 +52,34 @@ public class WatchService {
         watchRepository.deleteById(id);
     }
 
-    public List<WatchResponse> list(){
-        List<Watch> watches = watchRepository.findAll();
-        List<WatchResponse> watchesResponse = new ArrayList<>();
-        for(Watch watch : watches){
-            WatchResponse response = watchMapper.toResponse(watch);
-            watchesResponse.add(response);
+    public WatchPageResponse list(Integer page, Integer perPage){
+        if (page == null || page < 1) {
+            throw new DomainException("A página deve ser maior ou igual a 1.");
         }
-        return watchesResponse;
+
+        if (perPage == null || perPage < 1) {
+            throw new DomainException("A quantidade de itens por página deve ser maior ou igual a 1.");
+        }
+
+        if (perPage > 60) {
+            throw new DomainException("A quantidade de itens por página não pode ser maior que 60.");
+        }
+
+        Pageable pageable = PageRequest.of(page - 1, perPage);
+
+        Page<Watch> watchesPage = watchRepository.findAll(pageable);
+        List<WatchResponse> items = new ArrayList<>();
+        for(Watch watch : watchesPage.getContent()){
+            WatchResponse response = watchMapper.toResponse(watch);
+            items.add(response);
+        }
+        return new WatchPageResponse(
+                items,
+                watchesPage.getTotalElements(),
+                page,
+                perPage,
+                watchesPage.getTotalPages()
+        );
     }
 
     public WatchResponse update(UUID id, WatchRequest request){
